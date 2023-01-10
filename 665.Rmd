@@ -1,0 +1,411 @@
+---
+author: "Ashley Vizcaino"
+output: html_document
+---
+
+    
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+
+
+
+<div align="center">
+<h1 style="color: #0294B9">Case Study 2 Bellabeat</h1>
+</div>
+
+
+<div align="center">
+  <img src="/cloud/project/bellabeat/fitwatch.jpg" alt="Description of image" width="400" height="300">
+</div>
+
+<nav>
+  <h2 style="color: #0294B9">Table of Contents</h2>
+  <ul>
+    <li><a href="#Ask">Ask</a></li>
+    <li><a href="#Preparing the data">Preparing the data"</a></li>
+    <li><a href="#Process">Process</a></li>
+    <li><a href="#Analyze">Analyze</a></li>
+    <li><a href="#Act and Share">Act and Share</a></li>
+  </ul>
+</nav>
+
+
+<h2 id="Ask" style="color: #0294B9">Ask</h2>
+
+<p>The purpose of this analysis is to gain a deeper understanding of the Leaf bracelet , a product from the wearable health and wellness company Bellabeat. By analyzing the usage data of the FITBIT smart device, I aim to learn more about how people are currently using their devices. Specifically, I want to identify trends and patterns in the data that will help us improve our understanding of consumer usage. To achieve this goal, I will need to analyze data on customer demographics, product usage, and sales data. We will also need to perform statistical analyses to identify significant trends and patterns in the data. Based on my findings, I will make recommendations for how to optimize our marketing efforts and improve product performance.</p>
+
+
+<h2 id="Preparing the data" style="color: #0294B9"> Preparing the data </h2>
+
+<h4 style="font-size: 5; color: #B92702">Data Sources</h4>
+
+
+<p>The data source for this analysis is a public dataset called the FitBit Fitness Tracker Data, which was made available through Mobius on Kaggle under the CC0: Public Domain license. The data set contains personal fitness tracker information from 30 Fitbit users, who participated in a distributed survey conducted via Amazon Mechanical Turk between 03.12.2016-05.12.2016. The data includes minute-level output for physical activity, heart rate, and sleep monitoring, and provides insights into the daily habits of smart device users.</p>
+
+<h4 style="font-size: 5; color: #B92702">Tables used From FitBit Fitness Tracker Data</h4>
+
+For my analysis, I used the following tables from the FitBit Fitness Tracker Data:
+
+ <li>DailyActivity_merged</li>
+ <li>DailyIntensities_merged</li>
+ <li>Sleepday - sleepDay_merged</li>
+ <li>DailySteps_merged </li>
+
+<p>Before analyzing the data, I downloaded the three CSV files and imported them into Big Query for cleaning. During the data preparation process, I encountered an error message related to the timestamp format in the Sleepday - sleepDay_merged table. The error indicated that Big Query was unable to parse the timestamp '4/12/2016 12:00:00 AM' as a valid TIMESTAMP value due to the unrecognized time zone 'AM'. To fix this error, I modified the timestamp format in the CSV file to a format that is recognized by Big Query.</p>
+
+<h2 id="Process" style="color: #0294B9"> Process</h2> 
+
+To clean the data, I used SQL within Big Query to modify each table individually. The cleaning process is shown below.
+
+<h4 style="font-size: 5; color: #B92702">Cleaning the data through SQL</h4>
+
+<h4 style="font-size: 5; color: #0238b8"><li>Daily_activity table cleaning </li></h4>
+
+Checking if there are any nulls in any columns in the daily_activity table
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning1.jpg")
+```
+Checking if there are any nulls in any columns in the daily_activity table
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning2.jpg")
+```
+
+Validating the match of survey dates 04.12.2016-05.12.2016 and the SedentaryActiveDistance column in the daily_activity table should not be below zero since Sedentary means inactive.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning3.jpg")
+```
+Counting the highest and lowest calories burned and noticing that there is 0 calories as the lowest. Therefore finding how many particpants have only 0 calories burned.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning4.jpg")
+```
+3 partipants have 0 calories for the same days of activity.
+
+
+Finding how many participants have a LoggedActivitiesDistance that is greater than zero since zero is typically registered
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning5.jpg")
+```
+<h4 style="font-size: 5; color: #0238b8"><li>Daily_intense table cleaning </li></h4>
+
+Checking if there are any nulls and duplicates any of the columns in the daily_intense table
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning6.jpg")
+```
+
+ 
+ 
+Checking that there is different activity days per participant and validating the match of survey dates 04.12.2016-05.12.2016
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning7.jpg")
+```
+
+Checking what is the most and least amount of minututes for the LightlyActiveMinutes and  FairlyActiveMinutes column 
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning8.jpg")
+```
+Checking and counting the Outliers in the FairlyActiveMinutes column
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning9.jpg")
+```
+
+Creating another column that is called fair_validity that shows if the SedentaryActiveDistance is below 74 to make that an invalid number and counting the amount of invalid entries there are 
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning10.jpg")
+```
+
+Checking what is the most and least amount of minutes for the VeryActiveMinutes column and checking for outliers and the total count of outliers. 
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning11.jpg")
+```
+
+
+Creating another column called very_validity that shows if VeryActiveMinutes is below 120 to make that an invalid number
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning12.jpg")
+```
+The SedentaryActiveDistance column in the daily_intense table should not be below zero since Sedentary means inactive. I counted the highest and lowest SedentaryActiveDistance and creating another colum that called SedentaryActiveDistance_validitity that shows if SedentaryActiveDistance is below 0.01  and making that an invalid number. 
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning13.jpg")
+```
+
+Since there are inconsistencies in the decimal places for the columns LightActiveDistance, ModeratelyActiveDistance, and VeryActiveDistance  I rounded all numbers by three decimal points.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning14.jpg")
+```
+<h4 style="font-size: 5; color: #0238b8"><li>Daily_sleep table cleaning</li></h4>
+
+Checking if there are any nulls and duplicates in any columns in the daily_sleep table. Also checking if the the dates match the survey dates of 04.12.2016-05.12.2016.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning15.jpg")
+```
+
+Checking what is the most and least amount of sleep records for the TotalSleepRecords and TotalMinutesAsleep column
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning16.jpg")
+```
+
+Creating another colum that called totalsleep_validitity that shows if TotalMinutesAsleep is below 61 and greater than 775 making that an invalid number
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning17.jpg")
+```
+Checking what is the most and least amount of assuming minutes in bed for the TotalTimeInBed column. Also,checking the number of Outliers and creating another colum that called TotalTimeInBed_validitity that shows if TotalTimeInBed is below 61 and greater than 961  making that an invalid number.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning18.jpg")
+```
+<h4 style="font-size: 5; color: #0238b8"><li>Daily_steps table cleaning</li></h4>
+
+Checking if there are any nulls and duplicates in any columns in the daily_steps table. Also checking if the the dates match the survey dates of 04.12.2016-05.12.2016.
+
+```{r, echo = FALSE}
+knitr::include_graphics("/cloud/project/bellabeat/cleaning19.jpg")
+```
+
+<h2 id="Analyze" style="color: #0294B9">Analyze</h2>
+
+
+<h4 style="font-size: 5; color: #B92702">Installing and loading packages</h4>
+
+----
+
+```{r}
+install.packages('tidyverse')
+library(tidyverse)
+install.packages('dplyr')
+library(dplyr)
+install.packages('lubridate')
+library(lubridate)
+install.packages('janitor')
+library(janitor)
+library(ggplot2)
+library(readr)
+```
+<h4 style="font-size: 5; color: #B92702"> Loading your CSV files</h4>
+
+
+```{r}
+daily_activity <- read.csv("/cloud/project/bellabeat/dailyActivity_merged.csv")
+daily_intense <- read.csv("/cloud/project/bellabeat/dailyIntensities_merged.csv")
+daily_sleep <- read.csv("/cloud/project/bellabeat/sleepday - sleepDay_merged.csv")
+daily_steps <- read.csv("/cloud/project/bellabeat/dailySteps_merged.csv")
+```
+
+<<h4 style="font-size: 5; color: #B92702">Checking to see if all tables load</h4>
+
+```{r}
+head(daily_activity)
+head(daily_intense)
+head(daily_sleep)
+head(daily_steps)
+```
+<h4 style="font-size: 5; color: #B92702">Joining daily_intense and daily_sleep</h4>
+
+I am joining these two data frames together to analyze how these two are correlated to each other. Through this join I will be answering different questions.
+
+```{r }
+sleep_and_intensity <- daily_intense %>%
+  full_join(daily_sleep, by="Id")
+```
+The maxium amount of very active minutes per particpant
+
+```{r}
+max_very_act_mins <- aggregate(VeryActiveMinutes ~ Id, sleep_and_intensity, max)
+
+print(max_very_act_mins)
+
+```
+
+Average amount of sleep per participant according to their maxium VeryActiveMinutes
+
+```{r}
+averages1 <- sleep_and_intensity %>%
+  group_by(Id) %>%
+  filter(VeryActiveMinutes == max(VeryActiveMinutes)) %>%
+  summarize(avg_sleep_mins = mean(TotalMinutesAsleep))
+print(averages1)
+
+```
+
+Graphing the relationship between max VeryActiveMinutes and TotalMinutesAsleep
+
+```{r}
+ggplot(averages1, aes(x = Id, y = avg_sleep_mins)) +
+  geom_point(color = "blue") +
+  geom_smooth(color = "red") +
+  geom_text(aes(label = Id), size = 3, hjust = 0, vjust = 0) +
+  xlab("Id") + ylab("Average Sleep Duration (minutes)") +
+  ggtitle("Average Sleep Duration by participant according to their max VeryActiveMinutes")
+```
+
+
+
+According to the graph the less minutes someone is active, the more minutes they tend to sleep.
+
+
+<h4 style="font-size: 5; color: #B92702">Joining daily_activity and daily_steps</h4>
+
+I am joining these two data frames together to analyze how these two are correlated to each other. Through this join I will be answering different questions.
+
+```{r}
+activity_and_steps <- daily_activity %>%
+  full_join(daily_steps, by="Id")
+```
+
+Showing the correlation between Total steps and Calories burned per participant from the new joined data frame
+
+```{r}
+
+steps_calories_by_id <- activity_and_steps %>%
+  group_by(Id) %>%
+  summarize(total_steps = sum(TotalSteps), calories = sum(Calories))
+print(steps_calories_by_id)
+
+```
+
+Graphing the correlation between Calories and Totalsteps burned per participant from the new joined.
+
+```{r}
+ggplot(activity_and_steps, aes(x = Calories )) +
+    geom_bar() +
+  xlab("Totalcals") + ylab("Total steps") +
+  ggtitle("Total Calories Burned by participants")
+```
+
+Calculating the Average Total Steps per participant from the new joined data frame
+
+```{r}
+average_totalsteps <- activity_and_steps %>%
+  group_by(Id) %>%
+  summarize(mean_steps = mean(TotalSteps))
+print(average_totalsteps)
+```
+
+
+Calculating the Average calories per participant from the new joined data frame
+
+```{r}
+average_calories <- activity_and_steps %>%
+  group_by(Id) %>%
+  summarize(mean_calories = mean(Calories))
+print(average_calories)
+```
+
+Calculating how many calories were burned by each participant correlating it their average of total steps
+
+```{r}
+average_cal_steps <- activity_and_steps %>%
+  group_by(Id) %>%
+  summarize(mean_steps = mean(TotalSteps),
+            mean_calories = mean(Calories))
+print(average_cal_steps)
+```
+
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(average_cal_steps, aes(x = mean_steps, y = mean_calories)) +
+  geom_point() +
+  geom_smooth() +
+  xlab("Mean Steps") + ylab("Mean Calories Burned") +
+  ggtitle("Mean Steps vs. Mean Calories Burned")
+```
+<h4 style="font-size: 5; color: #B92702">Joining daily_activity and daily_sleep</h4>
+
+I am merging these two data frames together to analyze how these two are correlated to each other. Through this join I will be answering different questions.
+
+```{r}
+df_merged <- merge(daily_sleep, daily_activity, by = "Id")
+
+```
+
+Graphing the correlation between the TotalMinutesAsleep and VeryActiveDistanc
+
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+ggplot(df_merged, aes(x = TotalMinutesAsleep, y = VeryActiveDistance)) +
+  geom_point()+
+  ggtitle("Relationship Between Total Minutes Asleep and Very Active Distance")
+
+```
+
+Graphing the correlation between VeryActiveMinutes and VeryActiveDistance
+
+
+```{r}
+ggplot(data = daily_activity) +
+    geom_bar(mapping = aes(x = VeryActiveMinutes, y = VeryActiveDistance),
+             stat = "identity", fill = "#ae7855") +
+    labs(title = "Very Active Distance compared to VeryActiveMinutes",
+         subtitle = "Does more a more active state = a farther distance",
+         x = "minutes",
+         y = "distance") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+
+
+<h2 id="Act and Share" style="color: #0294B9">Act and Share</h2>
+
+Based on the analysis of Fitbit data, it was found that those who wore their tracker during very active moments tended to have lower average sleep times. This goes against the popular belief that increased physical activity leads to increased tiredness. In fact, participants who were less active actually slept more. Additionally, it was found that those who took more steps in a day burned more calories compared to those who took fewer steps. Participants who traveled greater distances while being active also tended to spend less time sleeping. These insights could potentially be applied to the Bellabeat Leaf. By understanding the relationship between physical activity and sleep, the Leaf could potentially help users to optimize their daily activity levels and improve their overall well-being.
+ 
+Some potential insights that Bellabeat could consider to apply to the leaf are:
+ 
+ <li>Promote the idea that being more active during the day can help people sleep better at night, rather than just assuming that increased activity will lead to increased fatigue. </li>
+ 
+ <li>Consider developing features or strategies that help people track and optimize their activity levels in order to improve sleep quality. </li>
+ 
+ <li>Consider offering tips or resources for people who are struggling to get enough sleep, as this may be related to their activity levels or other factors </li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
